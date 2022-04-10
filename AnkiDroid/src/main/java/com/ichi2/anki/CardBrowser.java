@@ -91,6 +91,7 @@ import com.ichi2.libanki.Utils;
 import com.ichi2.libanki.Deck;
 import com.ichi2.themes.Themes;
 import com.ichi2.ui.CardBrowserSearchView;
+import com.ichi2.ui.FixedTextView;
 import com.ichi2.upgrade.Upgrade;
 import com.ichi2.utils.FunctionalInterfaces;
 import com.ichi2.utils.HandlerUtils;
@@ -120,6 +121,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import kotlin.Unit;
 import timber.log.Timber;
@@ -1348,10 +1350,29 @@ public class CardBrowser extends NavigationDrawerActivity implements
             return true;
         } else if (itemId == R.id.action_edit_tags) {
             showEditTagsDialog();
+        } else if (itemId == R.id.action_truncate_lines) {
+            IntegerDialog truncateLinesDialog = new IntegerDialog();
+            truncateLinesDialog.setArgs(
+                    getString(R.string.card_browser_truncate_lines),
+                    "", //Nothing really to put here.
+                    3,
+                    "Hello, world" //TODO: Make this actually do something.
+            );
+            truncateLinesDialog.setCallbackRunnable(lines -> changesLinesTruncated(lines));
+            showDialogFragment(truncateLinesDialog);
         }
         return super.onOptionsItemSelected(item);
     }
 
+    protected void changesLinesTruncated(int linesToTruncate) {
+        for(int cardIndex = 0; cardIndex < mCardsAdapter.getCount(); cardIndex++) {
+            View cardView = mCardsAdapter.getView(cardIndex, null, null);
+            FixedTextView sfldView = cardView.findViewById(R.id.card_sfld);
+            FixedTextView column2View = cardView.findViewById(R.id.card_column2);
+            sfldView.setMaxLines(linesToTruncate);
+            column2View.setMaxLines(linesToTruncate);
+        }
+    }
 
     protected void deleteSelectedNote() {
         if (!mInMultiSelectMode) {
