@@ -1526,7 +1526,7 @@ class CardBrowser : NavigationDrawerActivity(), SubtitleListener, DeckSelectionL
         for (note in selectedNotes) {
             val previousTags: List<String?> = note.tags
             val updatedTags = getUpdatedTags(previousTags, selectedTags, indeterminateTags)
-            note.setTagsFromStr(col.tags.join(updatedTags))
+            note.setTagsFromStr(col.tags.join(updatedTags.filterNotNull()))
         }
         Timber.i("CardBrowser:: editSelectedCardsTags: Saving note/s tags...")
         TaskManager.launchCollectionTask(
@@ -1767,7 +1767,7 @@ class CardBrowser : NavigationDrawerActivity(), SubtitleListener, DeckSelectionL
 
         override fun actualOnProgressUpdate(context: CardBrowser?, value: Array<Card?>?) {
             // we don't need to reorder cards here as we've already deselected all notes,
-            context?.removeNotesView(value, false)
+            context?.removeNotesView(value!!.filterNotNull().toTypedArray(), false)
             mCardsDeleted = value!!.size
         }
 
@@ -1942,7 +1942,7 @@ class CardBrowser : NavigationDrawerActivity(), SubtitleListener, DeckSelectionL
         }
 
         override fun actualOnPostExecute(context: CardBrowser?, result: Pair<CardCollection<CardCache>, List<Long?>?>?) {
-            val cardsIdsToHide: List<Long> = result!!.second
+            val cardsIdsToHide: List<Long> = (result!!.second)!!.filterNotNull()
             try {
                 if (!cardsIdsToHide.isEmpty()) {
                     Timber.i("Removing %d invalid cards from view", cardsIdsToHide.size)
@@ -2642,8 +2642,8 @@ class CardBrowser : NavigationDrawerActivity(), SubtitleListener, DeckSelectionL
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     fun filterByTag(vararg tags: String?) {
         mTagsDialogListenerAction = TagsDialogListenerAction.FILTER
-        onSelectedTags(Arrays.asList(*tags), emptyList(), 0) // TODO: Maybe a better way?
-        filterByTags(Arrays.asList(*tags), 0)
+        onSelectedTags(mutableListOf<String?>(*tags).filterNotNull(), emptyList(), 0) // TODO: Maybe a better way?
+        filterByTags(mutableListOf<String?>(*tags).filterNotNull(), 0)
     }
 
     @VisibleForTesting
